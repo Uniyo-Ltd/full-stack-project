@@ -1,7 +1,12 @@
 import uuid
+from typing import Optional, List, Dict, Any
+from datetime import datetime
+from pydantic import EmailStr, BaseModel
+from sqlmodel import Field, Relationship, SQLModel, Column, JSON
+from sqlalchemy.ext.declarative import declarative_base
+import requests
 
-from pydantic import EmailStr
-from sqlmodel import Field, Relationship, SQLModel
+Base = declarative_base()
 
 
 # Shared properties
@@ -112,3 +117,75 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=40)
+
+class SetMenuCuisineLink(SQLModel, table=True):
+    set_menu_id: Optional[int] = Field(default=None, foreign_key="setmenu.id", primary_key=True)
+    cuisine_id: Optional[int] = Field(default=None, foreign_key="cuisine.id", primary_key=True)
+
+
+class Cuisine(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
+    name: str
+    set_menus: List["SetMenu"] = Relationship(back_populates="cuisines", link_model=SetMenuCuisineLink)
+
+
+class MenuGroupGroups(BaseModel):
+    ungrouped: int
+    Starters: Optional[int] = None
+    Mains: Optional[int] = None
+    Sides: Optional[int] = None
+    Dessert: Optional[int] = None
+    Sharing_Plates: Optional[int] = None
+    Side_dish: Optional[int] = None
+    Canape: Optional[int] = None
+    Main: Optional[int] = None
+    Main_Dish: Optional[int] = None
+    Add_On: Optional[int] = None
+    Desserts: Optional[int] = None
+    To_Start: Optional[int] = None
+    Main_Dish: Optional[int] = None
+    Side_Dish: Optional[int] = None
+    Sharing_Plates: Optional[int] = None
+    Desserts: Optional[int] = None
+    mains: Optional[int] = None
+    starter: Optional[int] = None
+    desserts: Optional[int] = None
+
+class MenuGroups(BaseModel):
+    dishes_count: int
+    selectable_dishes_count: int
+    groups: MenuGroupGroups
+
+
+class SetMenu(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime
+    description: Optional[str] = None
+    display_text: int
+    image: str
+    thumbnail: str
+    is_vegan: bool
+    is_vegetarian: bool
+    name: str
+    status: int
+    price_per_person: float
+    min_spend: float
+    is_seated: bool
+    is_standing: Optional[bool] = Field(default=False)
+    is_canape: bool
+    is_mixed_dietary: bool
+    is_meal_prep: bool
+    is_halal: bool
+    is_kosher: bool
+    available: bool
+    number_of_orders: int
+    cuisines: List[Cuisine] = Relationship(back_populates="set_menus", link_model=SetMenuCuisineLink)
+
+
+class SetMenuData(SQLModel):
+    data: List[SetMenu]
+    links: Dict[str, Optional[str]]
+    meta: Dict[str, any]
+
+    class Config: # Add this Config inner class
+        arbitrary_types_allowed = True # Set this to True

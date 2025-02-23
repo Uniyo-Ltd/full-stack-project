@@ -119,7 +119,7 @@ docker compose exec backend bash scripts/tests-start.sh -x
 
 ### Test Coverage
 
-When the tests are run, a file `htmlcov/index.html` is generated, you can open it in your browser to see the coverage of the tests.
+When the tests are run, a file `htmlcov/inde\x.html` is generated, you can open it in your browser to see the coverage of the tests.
 
 ## Migrations
 
