@@ -162,6 +162,12 @@ services:
 
       # Enable redirection for HTTP and HTTPS
       - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.middlewares=https-redirect
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
 volumes:
   app-db-data:
 
