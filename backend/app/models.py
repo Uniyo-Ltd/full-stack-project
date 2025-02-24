@@ -5,6 +5,7 @@ from pydantic import EmailStr, BaseModel
 from sqlmodel import Field, Relationship, SQLModel, Column, JSON
 from sqlalchemy.ext.declarative import declarative_base
 import requests
+from sqlalchemy import Index
 
 Base = declarative_base()
 
@@ -158,6 +159,19 @@ class MenuGroups(BaseModel):
 
 
 class SetMenu(SQLModel, table=True):
+    __table_args__ = (
+        # Index for price-based queries
+        Index('idx_price_per_person', 'price_per_person'),
+        
+        # Composite index for dietary requirements (commonly filtered together)
+        Index('idx_dietary', 'is_vegan', 'is_vegetarian', 'is_halal'),
+        
+        # Index for name searches
+        Index('idx_name', 'name'),
+        
+        # Index for created_at (for sorting/filtering by date)
+        Index('idx_created_at', 'created_at')
+    )
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime
     description: Optional[str] = None

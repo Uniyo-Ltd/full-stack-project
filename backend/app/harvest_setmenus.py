@@ -26,9 +26,10 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base.metadata.create_all(bind=engine)
 
-def harvest_set_menus(url):
+def harvest_set_menus(url, batch_size=100):
     db = SessionLocal()
     try:
+        count = 0
         while url:
             logging.info(f"Fetching data from: {url}")
             response = requests.get(url)
@@ -91,15 +92,17 @@ def harvest_set_menus(url):
                         )
                         db.add(link)
                 
-                db.commit()
+                count += 1
+                if count % batch_size == 0:
+                    db.commit()
+                    logging.info(f"Committed batch of {batch_size} records")
             
-            # Get next page URL
+            db.commit()  # Commit any remaining records
+            
             url = data.get('links', {}).get('next')
-            
-            # Add delay between requests to respect rate limits
             if url:
                 logging.info("Waiting 2 seconds before next request...")
-                time.sleep(2)  # Wait 2 seconds between requests
+                time.sleep(2)
             
     except Exception as e:
         logging.error(f"Error: {e}")
